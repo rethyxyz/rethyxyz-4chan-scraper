@@ -1,5 +1,13 @@
-# 4chan-scraper
+#+++++++++++++++#
+# 4chan-scraper #
+#+++++++++++++++#
+
+Summary:
+
 All links with matching file extensions (webm, jpg, jpeg, png...) are automatically downloaded to your current working directory.
 
-## Usage
-- `4chan-scraper.sh $LINK1 $LINK2 $LINK3 ...`
+
+
+Usage:
+
+4chan-scraper.sh [LINK 1] [LINK 2] [LINK 3] ...

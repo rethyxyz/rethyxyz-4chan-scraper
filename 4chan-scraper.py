@@ -6,52 +6,59 @@ import time
 
 from requests_html import HTMLSession
 
-def get_links(user_input):
+def get_image_links(user_input):
     session = HTMLSession()
     x = session.get(user_input)
     links = x.html.links
 
+    print(links)
+
     return links
 
-def get_web_content(file_extension, links, photo_counter):
+def get_web_content(file_extension, links, image_counter):
     x = re.compile(".*" + file_extension)
     links = list(filter(x.match, links))
 
-    try:
-        for link in links:
-            photo_counter = int(photo_counter) + 1
+    for link in links:
+        image_counter = int(image_counter) + 1
 
-            while (os.path.isfile(str(photo_counter) + "." + file_extension)):
-                photo_counter = int(photo_counter) + 1
+        while (os.path.isfile(str(image_counter) + "." + file_extension)):
+            image_counter = int(image_counter) + 1
 
-            req = requests.get('http:' + link)
-            with open(str(photo_counter) + "." + file_extension, 'wb') as f:
-                f.write(req.content)
-    except:
-        print(":: Skipped")
+        try:
+            req = requests.get(link)
+        except requests.exceptions.MissingSchema:
+            req = requests.get("http:" + link)
+        except requests.exceptions.InvalidURL:
+            continue
+
+        f = open(str(image_counter) + "." + file_extension, 'wb')
+        f.write(req.content)
+        f.close()
 
 def main():
+    # Check length of argument list.
     if (len(sys.argv) <= 1):
-        print(":: No args given")
-    else:
-        file_extensions = ["png", "gif", "jpg", "jpeg", "webm"]
-        threads = []
-        photo_counter = 0
+        print(":: No arguments given.")
+        print(":: Ensure you've provided arguments, then rerun " + sys.argv[0] + ".")
 
-        for arg in sys.argv:
-            threads.append(arg)
-            print(arg)
-        threads.pop(0)
+        quit(1)
 
-        for thread in threads:
-            print(":: Getting files from", thread)
+    file_extensions = ["png", "gif", "jpg", "jpeg", "webm"]
+    image_counter = 0
 
-            links = get_links(thread)
+    # Remove filename from list.
+    sys.argv.pop(0)
 
-            for extension in file_extensions:
-                get_web_content(extension, links, photo_counter)
+    for sub_url in sys.argv:
+        print("Generating file list from " + sub_url)
 
-        print("Done")
-        quit()
+        links = get_image_links(sub_url)
+
+        for extension in file_extensions:
+            get_web_content(extension, links, image_counter)
+
+    print("Downloaded from \"" + str(len(sys.argv)) + "\" URLs")
+    quit(0)
 
 main()
